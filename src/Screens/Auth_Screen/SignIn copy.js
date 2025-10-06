@@ -1,0 +1,193 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ImageBackground,
+} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {signInWithEmailAndPassword} from 'firebase/auth';
+import {auth} from '../Auth_Screen/firebase';
+import Toast from 'react-native-toast-message';
+
+// Reusable components
+import ReusableTextInput from '../../Components/ReusableTextInput';
+import ReusableButton from '../../Components/ReusableButton';
+
+const SignIn = ({navigation}) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter email and password',
+        position: 'bottom',
+        visibilityTime: 2000,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'red'}},
+      });
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      Toast.show({
+        type: 'success',
+        text1: 'Login Successful',
+        text2: 'Welcome back!',
+        position: 'bottom',
+        visibilityTime: 2000,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'green'}},
+      });
+      navigation.navigate('Main');
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: error.message,
+        position: 'bottom',
+        visibilityTime: 2500,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'red'}},
+      });
+    }
+  };
+
+  return (
+    <SafeAreaView style={{flex: 1}}>
+      <ImageBackground
+        source={require('../../Assets/new/splash.png')}
+        resizeMode="cover"
+        style={{flex: 1}}>
+        <ScrollView
+          contentContainerStyle={{flexGrow: 1}}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: 'white',
+              marginTop: 200,
+              borderTopLeftRadius: 60,
+              borderTopRightRadius: 60,
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+            }}>
+            <View style={{padding: 15}}>
+              <Text
+                style={{
+                  color: '#10790F',
+                  fontWeight: 'bold',
+                  fontSize: 26,
+                }}>
+                Login
+              </Text>
+
+              <View style={{marginTop: 20}}>
+                <Text style={{color: 'black', fontSize: 14, marginBottom: 5}}>
+                  Email
+                </Text>
+                <ReusableTextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  keyboardType="email-address"
+                />
+
+                <Text
+                  style={{
+                    color: 'black',
+                    fontSize: 14,
+                    marginTop: 15,
+                    marginBottom: 5,
+                  }}>
+                  Password
+                </Text>
+                <ReusableTextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  secureTextEntry
+                />
+              </View>
+
+              <View style={{marginTop: 20}}>
+                <ReusableButton title="Login" onPress={handleLogin} />
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View style={{marginTop: 10, alignItems: 'center', padding: 20}}>
+              <View style={{flexDirection: 'row', marginBottom: 20}}>
+                <Text style={{color: 'black', fontSize: 16, fontWeight: '300'}}>
+                  Don't have an account?{' '}
+                </Text>
+                <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                  <Text
+                    style={{
+                      color: '#10790F',
+                      fontWeight: 'bold',
+                      fontSize: 16,
+                    }}>
+                    Register
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Divider with "Or" */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  width: '100%',
+                  marginVertical: 20,
+                }}>
+                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+                <Text
+                  style={{
+                    marginHorizontal: 10,
+                    color: 'black',
+                    fontSize: 16,
+                    fontWeight: '500',
+                  }}>
+                  Or
+                </Text>
+                <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
+              </View>
+
+              {/* Google Icon */}
+              <TouchableOpacity
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                }}>
+                <Image
+                  source={require('../../Assets/new/google.png')}
+                  style={{width: 30, height: 30, resizeMode: 'contain'}}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </ImageBackground>
+    </SafeAreaView>
+  );
+};
+
+export default SignIn;
