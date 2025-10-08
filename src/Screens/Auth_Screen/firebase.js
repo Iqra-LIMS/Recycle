@@ -1,9 +1,11 @@
 /* eslint-disable prettier/prettier */
 // src/firebase.js
 import {initializeApp} from 'firebase/app';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence, GoogleAuthProvider, signInWithCredential  } from 'firebase/auth';
 import {getFirestore} from 'firebase/firestore';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
 
 
 // ✅ Your Firebase config from google-services.json
@@ -26,3 +28,31 @@ export const auth = initializeAuth(app, {
 // Export for use in your app
 //export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// ✅ Configure Google Signin
+GoogleSignin.configure({
+  webClientId: '1027731436786-1v38tq65fm3mr1svqct11gu72ee6tm66.apps.googleusercontent.com', // 🔴 Get this from Firebase console
+});
+
+// ✅ Function to sign in with Google
+export const signInWithGoogle = async () => {
+  try {
+    // Prompt Google Sign-in
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+
+    // Get ID token
+    const { idToken } = userInfo;
+    const googleCredential = GoogleAuthProvider.credential(idToken);
+
+    // Sign in with Firebase using Google credentials
+    return await signInWithCredential(auth, googleCredential);
+  } catch (error) {
+    console.error('Google Sign-In Error:', error);
+    throw error;
+  }
+};
+
+GoogleSignin.signIn()
+  .then(user => console.log("✅ User:", user))
+  .catch(err => console.log("❌ Error:", err));

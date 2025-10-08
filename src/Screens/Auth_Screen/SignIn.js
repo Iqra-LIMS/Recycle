@@ -16,6 +16,8 @@ import Toast from 'react-native-toast-message';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../Auth_Screen/firebase"; 
+import { signInWithGoogle } from '../Auth_Screen/firebase';
+
 
 
 // Reusable components
@@ -74,7 +76,7 @@ const handleLogin = async () => {
       props: { style: { backgroundColor: "green" } },
     });
 
-    navigation.navigate("Main");
+    navigation.replace("Main");
   } catch (error) {
     Toast.show({
       type: "error",
@@ -88,6 +90,31 @@ const handleLogin = async () => {
     });
   }
 };
+
+const [signingIn, setSigningIn] = useState(false);
+
+ const handleGoogleLogin = async () => {
+    if (signingIn) return; // prevent double tap
+    setSigningIn(true);
+
+    try {
+      const result = await signInWithGoogle(); 
+      console.log('✅ User signed in with Google:', result.user);
+
+      // 👉 Navigate to Main after successful sign-in
+      navigation.replace("Main");
+
+    } catch (error) {
+      if (error.message?.includes("Sign-in in progress")) {
+        console.log("⏳ Google sign-in already in progress...");
+      } else {
+        console.log('❌ Error:', error);
+      }
+    } finally {
+      setSigningIn(false);
+    }
+  };
+
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -201,7 +228,8 @@ const handleLogin = async () => {
                   alignItems: 'center',
                   borderWidth: 1,
                   borderColor: '#ccc',
-                }}>
+                }} onPress={handleGoogleLogin}
+                 disabled={signingIn}>
                 <Image
                   source={require('../../Assets/new/google.png')}
                   style={{width: 30, height: 30, resizeMode: 'contain'}}

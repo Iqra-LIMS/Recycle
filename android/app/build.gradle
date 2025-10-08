@@ -13,19 +13,31 @@ react {
 /**
  * Run Proguard (code shrinker/obfuscator) — optional
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * Choose JavaScriptCore flavor (or Hermes if enabled)
  */
 def jscFlavor = 'org.webkit:android-jsc:+'
+def enableSeparateBuildPerCPUArchitecture = true
 
 android {
+
+
     namespace "com.myproject"
 
     ndkVersion "26.1.10909125"
     compileSdk rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
+
+    splits {
+        abi {
+            reset()
+            enable enableSeparateBuildPerCPUArchitecture
+            universalApk true
+            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+    }
 
     defaultConfig {
         applicationId "com.myproject"
@@ -33,11 +45,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-
-        // ✅ Supported Architectures (ARM + x86)
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
     }
 
     signingConfigs {
@@ -47,19 +54,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            // ✅ Use your release keystore
-            if (project.hasProperty("MYAPP_UPLOAD_STORE_FILE")) {
+       release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
                 storeFile file(MYAPP_UPLOAD_STORE_FILE)
                 storePassword MYAPP_UPLOAD_STORE_PASSWORD
                 keyAlias MYAPP_UPLOAD_KEY_ALIAS
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
-            } else {
-                // fallback to debug key (optional)
-                storeFile file('debug.keystore')
-                storePassword 'android'
-                keyAlias 'androiddebugkey'
-                keyPassword 'android'
             }
         }
     }
@@ -70,22 +70,12 @@ android {
         }
         release {
             // ✅ Use release keystore for signing
-            signingConfig signingConfigs.release
-
-            // Optional: shrink/minify
+             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
-            shrinkResources enableProguardInReleaseBuilds
-
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-
-    // ✅ This ensures correct ABI builds and avoids CMake errors
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging = true
-        }
-    }
+  
 }
 
 dependencies {

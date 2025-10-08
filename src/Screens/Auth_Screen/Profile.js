@@ -105,21 +105,21 @@ const Profile = () => {
         <Profile_button
           title="Edit Profile"
           imageSource={require('../../Assets/new/edit.png')}
-          onPress={() => console.log('Edit Profile Pressed')}
+         onPress={() => navigation.navigate("EditProfile")}
           move={require('../../Assets/new/move.png')}
         />
         <View style={{height: 16}} />
         <Profile_button
           title="Privacy Policy"
           imageSource={require('../../Assets/new/privacy.png')}
-          onPress={() => console.log('Privacy Policy Pressed')}
+          onPress={() => navigation.navigate("PrivacyPolicy")}
           move={require('../../Assets/new/move.png')}
         />
         <View style={{height: 16}} />
         <Profile_button
           title="Settings"
           imageSource={require('../../Assets/new/Settings.png')}
-          onPress={() => console.log('Settings Pressed')}
+          onPress={() => navigation.navigate("Setting")}
           move={require('../../Assets/new/move.png')}
         />
         <View style={{height: 16}} />

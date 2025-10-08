@@ -22,6 +22,9 @@ import Contact from './src/Screens/Home/ChildScreens/Contact';
 import Review from './src/Screens/Home/ChildScreens/Review';
 import Sucessfull from './src/Screens/Home/ChildScreens/Sucessfull';
 import RecycleGuide from './src/Screens/Home/ChildScreens/RecycleGuide';
+import EditProfile from './src/Screens/Home/ChildScreens/EditProfile';
+import Setting from './src/Screens/Home/ChildScreens/Setting';
+import PrivacyPolicy from './src/Screens/Home/ChildScreens/PrivacyPolicy';
 const Stack = createNativeStackNavigator();
 const toastConfig = {
   success: props => (
@@ -192,6 +195,45 @@ export default function App() {
               <Header
                 title="Recycling Services"
                 subtitle="learn what can & can’t recycle"
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+         <Stack.Screen
+          name="EditProfile"
+          component={EditProfile}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Edit Profile"
+                subtitle=""
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+         <Stack.Screen
+          name="Setting"
+          component={Setting}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Settings"
+                subtitle=""
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+         <Stack.Screen
+          name="PrivacyPolicy"
+          component={PrivacyPolicy}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Privacy Policy"
+                subtitle="Terms & Condition, Disclaimer "
                 onBackPress={() => navigation.goBack()}
               />
             ),
