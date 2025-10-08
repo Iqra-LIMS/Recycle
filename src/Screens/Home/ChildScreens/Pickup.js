@@ -94,10 +94,11 @@ const Pickup = () => {
           value={tempAddress}
           onChangeText={setTempAddress}
           placeholder="Enter new address"
+          placeholderTextColor="black"
         />
       ) : (
         <TextInput
-          style={[styles.input, { color: "#888" }]}
+          style={[styles.input, { color: "black" }]}
           editable={false}
           value={address}
         />
@@ -126,7 +127,10 @@ const Pickup = () => {
           ]}
           onPress={() => setSelectedWaste(waste)}
         >
-          <Text style={styles.optionText}>{waste}</Text>
+          <Text style={[
+        styles.optionText,
+        selectedWaste === waste && { color: 'white' } // 👈 text turns white when selected
+      ]}>{waste}</Text>
         </TouchableOpacity>
       ))}
 
@@ -156,6 +160,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 12,
     fontSize: 14,
+    color:'black'
   },
   greenBtn: {
     backgroundColor: "#2e7d32",
@@ -170,7 +175,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 10,
   },
-  selectedOption: { backgroundColor: "#2e7d32" },
+  selectedOption: { backgroundColor: "#2e7d32", color:'white' },
   optionText: { color: "#000", fontWeight: "500" },
   note: { fontSize: 12, color: "#777", marginTop: 20, textAlign: "center" },
 });

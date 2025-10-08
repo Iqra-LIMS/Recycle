@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,24 @@ import ReusableButton from '../../Components/ReusableButton';
 const SignIn = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
+
+
+    useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem("userEmail");
+        const savedPassword = await AsyncStorage.getItem("userPassword");
+
+        if (savedEmail) setEmail(savedEmail);
+        if (savedPassword) setPassword(savedPassword);
+      } catch (error) {
+        console.log("Error loading credentials:", error);
+      }
+    };
+
+    loadCredentials();
+  }, []);
 
 const handleLogin = async () => {
   if (!email || !password) {
@@ -46,6 +64,8 @@ const handleLogin = async () => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+      await AsyncStorage.setItem("userEmail", email);
+      await AsyncStorage.setItem("userPassword", password);
 
     // 👇 Fetch profile from Firestore
     const docRef = doc(db, "profile", user.uid);
@@ -91,17 +111,14 @@ const handleLogin = async () => {
   }
 };
 
-const [signingIn, setSigningIn] = useState(false);
 
  const handleGoogleLogin = async () => {
     if (signingIn) return; // prevent double tap
     setSigningIn(true);
 
     try {
-      const result = await signInWithGoogle(); 
+      const result = await signInWithGoogle();
       console.log('✅ User signed in with Google:', result.user);
-
-      // 👉 Navigate to Main after successful sign-in
       navigation.replace("Main");
 
     } catch (error) {

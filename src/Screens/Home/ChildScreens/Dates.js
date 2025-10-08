@@ -183,6 +183,8 @@ const Dates = () => {
         <Text style={styles.sectionTitle}>Special Instructions</Text>
         <TextInput
           placeholder="Items location, access notes..."
+                    placeholderTextColor="black"
+
           style={styles.input}
           value={instruction}
           onChangeText={setInstruction}
@@ -194,9 +196,11 @@ const Dates = () => {
         <Text style={styles.sectionTitle}>Contact Information</Text>
         <Text style={styles.label}>Phone Number</Text>
         <TextInput
-          placeholder="+92 317 1579559"
+          placeholder=" 0317 1579559"
+          placeholderTextColor="black"
           style={styles.input}
           keyboardType="phone-pad"
+          maxLength={11}
           value={number}
           onChangeText={setNumber}
         />
@@ -284,6 +288,7 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 15,
     backgroundColor: "#fff",
+    color:"black"
   },
   greenBtn: {
     backgroundColor: "#2e7d32",

@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 20,
     fontWeight: "bold",
+    color:'black'
   },
   dateText: {
     fontSize: 20,

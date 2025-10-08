@@ -13,12 +13,17 @@ import {
 import {db, auth} from '../../Auth_Screen/firebase';
 import { useNavigation } from "@react-navigation/native";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 const EditProfile = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-      const navigation = useNavigation();
+  const [profileImage, setProfileImage] = useState(null);
+  const navigation = useNavigation();
   
 
   useEffect(() => {
@@ -35,6 +40,11 @@ const EditProfile = () => {
             setEmail(data.email || user.email);
           }
         }
+        // Load saved profile image from AsyncStorage
+        const savedImage = await AsyncStorage.getItem("profileImage");
+        if (savedImage) {
+          setProfileImage(savedImage);
+        }
       } catch (error) {
         console.error("Error fetching profile:", error);
       }
@@ -42,6 +52,47 @@ const EditProfile = () => {
 
     fetchProfile();
   }, []);
+
+
+  const pickImage = () => {
+    Alert.alert(
+      "Choose Option",
+      "Pick a profile picture",
+      [
+        {
+          text: "Camera",
+          onPress: () => openCamera(),
+        },
+        {
+          text: "Gallery",
+          onPress: () => openGallery(),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const openCamera = async () => {
+    const result = await launchCamera({ mediaType: "photo", saveToPhotos: true });
+    if (result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+      await AsyncStorage.setItem("profileImage", uri); // save locally
+    }
+  };
+
+  const openGallery = async () => {
+    const result = await launchImageLibrary({ mediaType: "photo" });
+    if (result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      setProfileImage(uri);
+      await AsyncStorage.setItem("profileImage", uri); // save locally
+    }
+  };
 
   const handleUpdate = async () => {
     try {
@@ -54,7 +105,7 @@ const EditProfile = () => {
           updatedAt: new Date(),
         });
         Alert.alert("✅ Success", "Profile updated successfully!");
-          navigation.navigate("Sucessfull");
+          navigation.navigate("Profile");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -68,11 +119,11 @@ const EditProfile = () => {
       <View style={styles.avatarContainer}>
         <Image
           source={{
-            uri: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            uri: profileImage || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
           }}
           style={styles.avatar}
         />
-        <TouchableOpacity>
+        <TouchableOpacity onPress={pickImage}>
           <Text style={styles.changePhoto}>Change Photo</Text>
         </TouchableOpacity>
       </View>
@@ -85,13 +136,16 @@ const EditProfile = () => {
           placeholder="Enter your name"
           value={name}
           onChangeText={setName}
+          placeholderTextColor='black'
         />
 
         <Text style={styles.label}>Phone Number</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter phone number"
+          placeholderTextColor='black'
           value={phone}
+          maxLength={11}
           onChangeText={setPhone}
           keyboardType="phone-pad"
         />
@@ -154,6 +208,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 15,
     fontSize: 16,
+    color:'black'
   },
   disabledInput: {
     backgroundColor: "#eee",

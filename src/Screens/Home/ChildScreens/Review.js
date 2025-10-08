@@ -16,7 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 const Review = () => {
   const [pickupData, setPickupData] = useState(null);
   const [dateData, setDateData] = useState(null);
-  const [cost, setCost] = useState(80); // starting cost
+  const [cost, setCost] = useState(50); // starting cost
     const navigation = useNavigation();
   
 
@@ -98,18 +98,10 @@ const Review = () => {
           <Text style={styles.value}>{pickupData.wasteType || 'N/A'}</Text>
         </View>
 
+       
         <View style={styles.row}>
           <Text style={styles.label}>Cost:</Text>
-          <View style={styles.costWrapper}>
-            <TextInput
-              style={styles.costInput}
-              value={cost}
-              keyboardType="numeric"
-              placeholder="80"
-              onChangeText={setCost}
-            />
-            <Text style={styles.rsText}>Rs</Text>
-          </View>
+          <Text style={styles.value}>{cost} Rs</Text>
         </View>
       </View>
 
@@ -183,6 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
     marginBottom: 5,
+    color:'black'
   },
   button: {
     backgroundColor: '#2d8a43',

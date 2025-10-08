@@ -173,9 +173,9 @@ export default function Location() {
           </TouchableOpacity>
 
           <Text style={styles.title}>{selectedLocation.name}</Text>
-          <Text>🏙 City: {selectedLocation.city}</Text>
-          <Text>🗑 Category: {selectedLocation.category}</Text>
-          <Text>
+          <Text style={{color:'black'}}>🏙 City: {selectedLocation.city}</Text>
+          <Text style={{color:'black'}}>🗑 Category: {selectedLocation.category}</Text>
+          <Text style={{color:'black'}}>
             🌍 {selectedLocation.latitude}, {selectedLocation.longitude}
           </Text>
 
@@ -237,6 +237,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 5,
+    color:'black'
   },
   directionButton: {
     marginTop: 10,
@@ -262,5 +263,6 @@ const styles = StyleSheet.create({
   legendItem: {
     fontSize: 14,
     marginBottom: 4,
+    color:'black'
   },
 });

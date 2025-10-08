@@ -31,6 +31,8 @@ const styles = StyleSheet.create({
   headerBackground: {
     height: 150,
     width: '100%',
+    backgroundColor:"white"
+
   },
   headerImage: {
     borderBottomLeftRadius: 20,
