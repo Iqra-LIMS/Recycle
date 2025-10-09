@@ -37,7 +37,10 @@ const Reduce = () => {
 
       <Categories
         categories={categories}
-        onSelect={name => console.log('Selected:', name)}
+         onSelect={name => {
+          console.log('Selected:', name);
+          navigation.navigate('ReduceCategoryDetail', {categoryName: name});
+        }}
       />
 
       <Text style={styles.sectionTitle}>Trending Projects:</Text>
@@ -57,13 +60,7 @@ const Reduce = () => {
           youtubeUrl="https://www.youtube.com/shorts/MWiXR8vblu4"
           image={require("../../../Assets/new/canned.png")}
         />
-        <TutorialCard
-          title="Plastic Bottle Bird Feeder"
-          description="Recycle plastic bottles into bird feeders"
-          difficulty="Medium"
-          youtubeUrl="https://www.youtube.com/shorts/31TqbI7hex8"
-          image={require("../../../Assets/new/water.png")}
-        />
+
       </ScrollView>
     </View>
   );

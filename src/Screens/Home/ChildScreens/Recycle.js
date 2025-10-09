@@ -23,6 +23,15 @@ const Recycle = () => {
     {name: 'Electronic', image: require('../../../Assets/new/electronic.png')},
     {name: 'Organic', image: require('../../../Assets/new/stink.png')},
   ];
+
+  const handleSelect = (name) => {
+  if (name === "Quick Actions") {
+    navigation.navigate("QuickAction"); // screen name in navigator
+  } else if (name === "Nearest Centers") {
+    navigation.navigate("NNearestLocation"); // screen name in navigator
+  }
+};
+
   const action = [
     {
       name: 'Quick Actions',
@@ -52,7 +61,7 @@ const Recycle = () => {
 
       <Categories
         categories={action}
-        onSelect={name => console.log('Selected:', name)}
+        onSelect={handleSelect}
       />
     </View>
   );

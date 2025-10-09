@@ -13,20 +13,21 @@ import {useNavigation} from '@react-navigation/native';
 import SearchBar from '../../../Components/SearchBar';
 import TutorialCard from '../../../Components/TutorialCard';
 
-
 const Reuse = () => {
   const navigation = useNavigation();
   const [search, setSearch] = React.useState('');
 
   const categories = [
     {name: 'Container', image: require('../../../Assets/TabIcons/cargo.png')},
-    {name: 'Furniture', image: require('../../../Assets/TabIcons/furniture.png')},
+    {
+      name: 'Furniture',
+      image: require('../../../Assets/TabIcons/furniture.png'),
+    },
     {name: 'Paper', image: require('../../../Assets/new/paper.png')},
     {name: 'Clothing', image: require('../../../Assets/TabIcons/brand.png')},
     {name: 'Electronics', image: require('../../../Assets/new/electronic.png')},
     {name: 'Garden', image: require('../../../Assets/TabIcons/flowers.png')},
   ];
-
 
   return (
     <View style={styles.container}>
@@ -36,36 +37,31 @@ const Reuse = () => {
 
       <Categories
         categories={categories}
-        onSelect={name => console.log('Selected:', name)}
+        onSelect={name => {
+          console.log('Selected:', name);
+          navigation.navigate('ReuseCategoryDetail', {category: name});
+        }}
       />
 
       <Text style={styles.sectionTitle}>Trending Projects:</Text>
 
-      
-     <ScrollView style={{marginTop:15}}>
+      <ScrollView style={{marginTop: 15}}>
         <TutorialCard
-          title="Cardboard Organizer"
-          description="Turn Shoe boxes into desk organizers"
+          title="Diy Jeans"
+          description="Alternative of Old Clothes"
           difficulty="Easy"
-          youtubeUrl="https://www.youtube.com/shorts/Oy7vKhuj6aA"
-          image={require("../../../Assets/new/box.png")}
+          youtubeUrl="https://www.youtube.com/shorts/rPY062omLT4"
+          image={require('../../../Assets/TabIcons/brand.png')}
         />
-        <TutorialCard
-          title="Tin can Planter"
-          description="Turn old tin cans into planters"
-          difficulty="Easy"
-          youtubeUrl="https://www.youtube.com/shorts/MWiXR8vblu4"
-          image={require("../../../Assets/new/canned.png")}
-        />
+
         <TutorialCard
           title="Plastic Bottle Bird Feeder"
           description="Recycle plastic bottles into bird feeders"
           difficulty="Medium"
           youtubeUrl="https://www.youtube.com/shorts/31TqbI7hex8"
-          image={require("../../../Assets/new/water.png")}
+          image={require('../../../Assets/new/water.png')}
         />
       </ScrollView>
-
     </View>
   );
 };
@@ -78,7 +74,12 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 12,
   },
-  sectionTitle: {fontWeight: 'bold', fontSize: 24, marginTop: 20, color:'black'},
+  sectionTitle: {
+    fontWeight: 'bold',
+    fontSize: 24,
+    marginTop: 20,
+    color: 'black',
+  },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',

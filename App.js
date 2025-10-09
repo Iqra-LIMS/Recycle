@@ -25,6 +25,10 @@ import RecycleGuide from './src/Screens/Home/ChildScreens/RecycleGuide';
 import EditProfile from './src/Screens/Home/ChildScreens/EditProfile';
 import Setting from './src/Screens/Home/ChildScreens/Setting';
 import PrivacyPolicy from './src/Screens/Home/ChildScreens/PrivacyPolicy';
+import QuickAction from './src/Screens/Home/ChildScreens/QuickAction';
+import NNearesLocation from './src/Screens/Home/ChildScreens/NNearesLocation';
+import ReuseCategoryDetail from './src/Screens/Home/ChildScreens/ReuseCategoryDetail';
+import ReduceCategoryDetail from './src/Screens/Home/ChildScreens/ReduceCategoryDetail';
 const Stack = createNativeStackNavigator();
 const toastConfig = {
   success: props => (
@@ -239,6 +243,61 @@ export default function App() {
             ),
           })}
         />
+
+         <Stack.Screen
+          name="QuickAction"
+          component={QuickAction}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Schedule Pickup"
+                subtitle="Schedule a pickup for recyclable items."
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+         <Stack.Screen
+          name="NNearestLocation"
+          component={NNearesLocation}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Nearest Recycling Centers"
+                subtitle=""
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="ReuseCategoryDetail"
+          component={ReuseCategoryDetail}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Reuse Services"
+                subtitle="Turn waste into something useful"
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+
+        <Stack.Screen
+          name="ReduceCategoryDetail"
+          component={ReduceCategoryDetail}
+          options={({navigation}) => ({
+            header: () => (
+              <Header
+                title="Eco-Friendly Tips"
+                subtitle="Simple ways to reduce waste at home"
+                onBackPress={() => navigation.goBack()}
+              />
+            ),
+          })}
+        />
+
       </Stack.Navigator>
       <Toast config={toastConfig} />
     </NavigationContainer>
