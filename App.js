@@ -224,7 +224,7 @@ export default function App() {
             header: () => (
               <Header
                 title="Settings"
-                subtitle=""
+                subtitle="Manage your app preferences"
                 onBackPress={() => navigation.goBack()}
               />
             ),
@@ -250,8 +250,8 @@ export default function App() {
           options={({navigation}) => ({
             header: () => (
               <Header
-                title="Schedule Pickup"
-                subtitle="Schedule a pickup for recyclable items."
+                title="Quick Actions"
+                subtitle="Take small steps to make a big impact"
                 onBackPress={() => navigation.goBack()}
               />
             ),

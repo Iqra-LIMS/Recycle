@@ -4,11 +4,11 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
   Linking,
   Platform,
-  TouchableOpacity,
-  Image
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
 import MapView, {Marker} from 'react-native-maps';
@@ -16,11 +16,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Geolocation from '@react-native-community/geolocation';
 import close from '../../Assets/new/close.png';
 
-
 // Haversine formula to calculate distance between 2 coordinates (km)
 function getDistance(lat1, lon1, lat2, lon2) {
   const toRad = x => (x * Math.PI) / 180;
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
   const a =
@@ -38,6 +37,7 @@ export default function Location() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [nearestLocations, setNearestLocations] = useState([]);
+  const [loading, setLoading] = useState(true); // 🌀 Loading state
 
   // Get current user location
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function Location() {
     return () => unsubscribe();
   }, []);
 
-  // Filter nearest locations (within 5 km)
+  // Filter nearest locations (within 20 km)
   useEffect(() => {
     if (currentLocation && garbageLocations.length > 0) {
       const nearby = garbageLocations.filter(loc => {
@@ -84,32 +84,24 @@ export default function Location() {
           loc.latitude,
           loc.longitude,
         );
-        return dist <= 20; // only locations within 5km
+        return dist <= 20;
       });
-      console.log('✅ Nearby locations:', nearby);
-
       setNearestLocations(nearby);
 
-      // Step 2: Filter recycling centers
       const recyclingCenters = nearby.filter(
-        loc => loc.category && loc.category.toLowerCase().includes('recycl'), // catches “Recycling center” or “Recycle”
+        loc => loc.category && loc.category.toLowerCase().includes('recycl'),
       );
 
-      console.log('♻️ Recycling centers found:', recyclingCenters);
-
       AsyncStorage.setItem('recyclingCenters', JSON.stringify(recyclingCenters))
-        .then(() =>
-          console.log(
-            '♻️ Recycling centers saved to AsyncStorage',
-            recyclingCenters,
-          ),
-        )
+        .then(() => console.log('♻️ Recycling centers saved'))
         .catch(err => console.log('Error saving recycling centers:', err));
+
+      setLoading(false); // ✅ Stop loading once data ready
     }
   }, [currentLocation, garbageLocations]);
 
   // Open Google Maps
-  const openGoogleMaps = (lat, lng, name) => {
+  const openGoogleMaps = (lat, lng) => {
     const url = Platform.select({
       ios: `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`,
       android: `google.navigation:q=${lat},${lng}&mode=d`,
@@ -117,7 +109,6 @@ export default function Location() {
     Linking.openURL(url);
   };
 
-  // Get pin color based on category
   const getMarkerColor = category => {
     if (!category) return 'gray';
     const c = category.toLowerCase();
@@ -129,7 +120,8 @@ export default function Location() {
 
   return (
     <View style={{flex: 1}}>
-      {currentLocation && (
+      {/* Always display map first */}
+      {currentLocation ? (
         <MapView
           style={{flex: 1}}
           initialRegion={{
@@ -145,48 +137,70 @@ export default function Location() {
             title="You are here"
           />
 
-          {/* Show only nearest markers */}
-          {nearestLocations.map(item => (
-            <Marker
-              key={item.id}
-              coordinate={{latitude: item.latitude, longitude: item.longitude}}
-              title={item.name}
-              description={item.city}
-              pinColor={getMarkerColor(item.category)} // category color
-              onPress={() => setSelectedLocation(item)}
-            />
-          ))}
+          {/* Show markers only when data loaded */}
+          {!loading &&
+            nearestLocations.map(item => (
+              <Marker
+                key={item.id}
+                coordinate={{
+                  latitude: item.latitude,
+                  longitude: item.longitude,
+                }}
+                title={item.name}
+                description={item.city}
+                pinColor={getMarkerColor(item.category)}
+                onPress={() => setSelectedLocation(item)}
+              />
+            ))}
         </MapView>
+      ) : (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="green" />
+          <Text style={{color: 'black', marginTop: 10}}>Getting location...</Text>
+        </View>
+      )}
+
+      {/* Show loading spinner on top of map while fetching */}
+      {loading && currentLocation && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="green" />
+          <Text style={{color: 'black', marginTop: 8}}>Loading nearby centers...</Text>
+        </View>
       )}
 
       {/* Info box for selected marker */}
       {selectedLocation && (
         <View style={styles.infoBox}>
-          {/* Close button */}
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => setSelectedLocation(null)}>
             <Image
               source={close}
-              style={{width: 20, height: 20, alignSelf: 'center', top: 2, tintColor:"white"}}
+              style={{
+                width: 20,
+                height: 20,
+                alignSelf: 'center',
+                top: 2,
+                tintColor: 'white',
+              }}
             />
           </TouchableOpacity>
 
           <Text style={styles.title}>{selectedLocation.name}</Text>
-          <Text style={{color:'black'}}>🏙 City: {selectedLocation.city}</Text>
-          <Text style={{color:'black'}}>🗑 Category: {selectedLocation.category}</Text>
-          <Text style={{color:'black'}}>
+          <Text style={{color: 'black'}}>🏙 City: {selectedLocation.city}</Text>
+          <Text style={{color: 'black'}}>
+            🗑 Category: {selectedLocation.category}
+          </Text>
+          <Text style={{color: 'black'}}>
             🌍 {selectedLocation.latitude}, {selectedLocation.longitude}
           </Text>
 
-          {/* Green button */}
           <TouchableOpacity
             style={styles.directionButton}
             onPress={() =>
               openGoogleMaps(
                 selectedLocation.latitude,
                 selectedLocation.longitude,
-                selectedLocation.name,
               )
             }>
             <Text style={styles.directionText}>Get Directions</Text>
@@ -195,17 +209,31 @@ export default function Location() {
       )}
 
       {/* Legend */}
-      <View style={styles.legend}>
-        <Text style={styles.legendItem}>🔵 You</Text>
-        <Text style={styles.legendItem}>🟢 Waste Collection</Text>
-        <Text style={styles.legendItem}>🟡 Drop-off Center</Text>
-        <Text style={styles.legendItem}>🔴 Recycling Center</Text>
-      </View>
+      {!loading && (
+        <View style={styles.legend}>
+          <Text style={styles.legendItem}>🔵 You</Text>
+          <Text style={styles.legendItem}>🟢 Waste Collection</Text>
+          <Text style={styles.legendItem}>🟡 Drop-off Center</Text>
+          <Text style={styles.legendItem}>🔴 Recycling Center</Text>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: '45%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
   infoBox: {
     position: 'absolute',
     bottom: 80,
@@ -224,11 +252,11 @@ const styles = StyleSheet.create({
     right: 10,
     width: 40,
     height: 40,
-    backgroundColor: 'red', // 🔴 Red background to stand out
-    borderRadius: 20, // Round button
+    backgroundColor: 'red',
+    borderRadius: 20,
     padding: 8,
-    elevation: 5, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 3,
@@ -237,7 +265,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 5,
-    color:'black'
+    color: 'black',
   },
   directionButton: {
     marginTop: 10,
@@ -263,6 +291,6 @@ const styles = StyleSheet.create({
   legendItem: {
     fontSize: 14,
     marginBottom: 4,
-    color:'black'
+    color: 'black',
   },
 });
