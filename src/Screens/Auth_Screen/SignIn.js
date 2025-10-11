@@ -13,12 +13,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {auth} from '../Auth_Screen/firebase';
 import Toast from 'react-native-toast-message';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../Auth_Screen/firebase"; 
-import { signInWithGoogle } from '../Auth_Screen/firebase';
-
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {doc, getDoc} from 'firebase/firestore';
+import {db} from '../Auth_Screen/firebase';
 
 // Reusable components
 import ReusableTextInput from '../../Components/ReusableTextInput';
@@ -27,111 +24,114 @@ import ReusableButton from '../../Components/ReusableButton';
 const SignIn = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [signingIn, setSigningIn] = useState(false);
 
-
-    useEffect(() => {
+  useEffect(() => {
     const loadCredentials = async () => {
       try {
-        const savedEmail = await AsyncStorage.getItem("userEmail");
-        const savedPassword = await AsyncStorage.getItem("userPassword");
+        const savedEmail = await AsyncStorage.getItem('userEmail');
+        const savedPassword = await AsyncStorage.getItem('userPassword');
 
         if (savedEmail) setEmail(savedEmail);
         if (savedPassword) setPassword(savedPassword);
       } catch (error) {
-        console.log("Error loading credentials:", error);
+        console.log('Error loading credentials:', error);
       }
     };
 
     loadCredentials();
   }, []);
 
-const handleLogin = async () => {
-  if (!email || !password) {
-    Toast.show({
-      type: "error",
-      text1: "Error",
-      text2: "Please enter email and password",
-      position: "bottom",
-      visibilityTime: 2000,
-      text1Style: { color: "white" },
-      text2Style: { color: "white" },
-      props: { style: { backgroundColor: "red" } },
-    });
-    return;
-  }
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-      await AsyncStorage.setItem("userEmail", email);
-      await AsyncStorage.setItem("userPassword", password);
-
-    // 👇 Fetch profile from Firestore
-    const docRef = doc(db, "profile", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const userData = docSnap.data();
-
-      // Save to AsyncStorage
-      await AsyncStorage.setItem("UserData", JSON.stringify({
-        fullname: userData.fullname,
-        email: userData.email,
-      }));
-
-      console.log("Saved to AsyncStorage:", userData);
-    } else {
-      console.log("No such user profile!");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Please enter email and password',
+        position: 'bottom',
+        visibilityTime: 2000,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'red'}},
+      });
+      return;
     }
 
-    Toast.show({
-      type: "success",
-      text1: "Login Successful",
-      text2: "Welcome back!",
-      position: "bottom",
-      visibilityTime: 2000,
-      text1Style: { color: "white" },
-      text2Style: { color: "white" },
-      props: { style: { backgroundColor: "green" } },
-    });
-
-    navigation.replace("Main");
-  } catch (error) {
-    Toast.show({
-      type: "error",
-      text1: "Login Failed",
-      text2: error.message,
-      position: "bottom",
-      visibilityTime: 2500,
-      text1Style: { color: "white" },
-      text2Style: { color: "white" },
-      props: { style: { backgroundColor: "red" } },
-    });
-  }
-};
-
-
- const handleGoogleLogin = async () => {
-    if (signingIn) return; // prevent double tap
-    setSigningIn(true);
-
     try {
-      const result = await signInWithGoogle();
-      console.log('✅ User signed in with Google:', result.user);
-      navigation.replace("Main");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userPassword', password);
 
-    } catch (error) {
-      if (error.message?.includes("Sign-in in progress")) {
-        console.log("⏳ Google sign-in already in progress...");
+      // 👇 Fetch profile from Firestore
+      const docRef = doc(db, 'profile', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+
+        // Save to AsyncStorage
+        await AsyncStorage.setItem(
+          'UserData',
+          JSON.stringify({
+            fullname: userData.fullname,
+            email: userData.email,
+          }),
+        );
+
+        console.log('Saved to AsyncStorage:', userData);
       } else {
-        console.log('❌ Error:', error);
+        console.log('No such user profile!');
       }
-    } finally {
-      setSigningIn(false);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Login Successful',
+        text2: 'Welcome back!',
+        position: 'bottom',
+        visibilityTime: 2000,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'green'}},
+      });
+
+      navigation.replace('Main');
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed',
+        text2: error.message,
+        position: 'bottom',
+        visibilityTime: 2500,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'red'}},
+      });
     }
   };
 
+  //  const handleGoogleLogin = async () => {
+  //     if (signingIn) return; // prevent double tap
+  //     setSigningIn(true);
+
+  //     try {
+  //       const result = await signInWithGoogle();
+  //       console.log('✅ User signed in with Google:', result.user);
+  //       navigation.replace("Main");
+
+  //     } catch (error) {
+  //       if (error.message?.includes("Sign-in in progress")) {
+  //         console.log("⏳ Google sign-in already in progress...");
+  //       } else {
+  //         console.log('❌ Error:', error);
+  //       }
+  //     } finally {
+  //       setSigningIn(false);
+  //     }
+  //   };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -245,8 +245,7 @@ const handleLogin = async () => {
                   alignItems: 'center',
                   borderWidth: 1,
                   borderColor: '#ccc',
-                }} onPress={handleGoogleLogin}
-                 disabled={signingIn}>
+                }}>
                 <Image
                   source={require('../../Assets/new/google.png')}
                   style={{width: 30, height: 30, resizeMode: 'contain'}}
