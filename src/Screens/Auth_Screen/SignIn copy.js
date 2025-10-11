@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {auth} from '../Auth_Screen/firebase';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {doc, getDoc} from 'firebase/firestore';
+import {db} from '../Auth_Screen/firebase';
 
 // Reusable components
 import ReusableTextInput from '../../Components/ReusableTextInput';
@@ -21,6 +24,22 @@ import ReusableButton from '../../Components/ReusableButton';
 const SignIn = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const loadCredentials = async () => {
+      try {
+        const savedEmail = await AsyncStorage.getItem('userEmail');
+        const savedPassword = await AsyncStorage.getItem('userPassword');
+
+        if (savedEmail) setEmail(savedEmail);
+        if (savedPassword) setPassword(savedPassword);
+      } catch (error) {
+        console.log('Error loading credentials:', error);
+      }
+    };
+
+    loadCredentials();
+  }, []);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -38,7 +57,36 @@ const SignIn = ({navigation}) => {
     }
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userPassword', password);
+
+      // 👇 Fetch profile from Firestore
+      const docRef = doc(db, 'profile', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+
+        // Save to AsyncStorage
+        await AsyncStorage.setItem(
+          'UserData',
+          JSON.stringify({
+            fullname: userData.fullname,
+            email: userData.email,
+          }),
+        );
+
+        console.log('Saved to AsyncStorage:', userData);
+      } else {
+        console.log('No such user profile!');
+      }
+
       Toast.show({
         type: 'success',
         text1: 'Login Successful',
@@ -49,7 +97,8 @@ const SignIn = ({navigation}) => {
         text2Style: {color: 'white'},
         props: {style: {backgroundColor: 'green'}},
       });
-      navigation.navigate('Main');
+
+      navigation.replace('Main');
     } catch (error) {
       Toast.show({
         type: 'error',
@@ -63,6 +112,26 @@ const SignIn = ({navigation}) => {
       });
     }
   };
+
+  //  const handleGoogleLogin = async () => {
+  //     if (signingIn) return; // prevent double tap
+  //     setSigningIn(true);
+
+  //     try {
+  //       const result = await signInWithGoogle();
+  //       console.log('✅ User signed in with Google:', result.user);
+  //       navigation.replace("Main");
+
+  //     } catch (error) {
+  //       if (error.message?.includes("Sign-in in progress")) {
+  //         console.log("⏳ Google sign-in already in progress...");
+  //       } else {
+  //         console.log('❌ Error:', error);
+  //       }
+  //     } finally {
+  //       setSigningIn(false);
+  //     }
+  //   };
 
   return (
     <SafeAreaView style={{flex: 1}}>

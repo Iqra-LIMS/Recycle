@@ -14,16 +14,33 @@ import {signInWithEmailAndPassword} from 'firebase/auth';
 import {auth} from '../Auth_Screen/firebase';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {doc, getDoc} from 'firebase/firestore';
+import {doc, getDoc, setDoc} from 'firebase/firestore';
 import {db} from '../Auth_Screen/firebase';
+
+// Google Sign-In
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import {GoogleAuthProvider, signInWithCredential} from 'firebase/auth';
 
 // Reusable components
 import ReusableTextInput from '../../Components/ReusableTextInput';
 import ReusableButton from '../../Components/ReusableButton';
 
+// Configure Google Sign-In
+GoogleSignin.configure({
+  webClientId: '1027731436786-nleiakfpt70ubhpc0slt7647d2jbd0e3.apps.googleusercontent.com', // Replace with your web client ID from Google Cloud Console
+  offlineAccess: true,
+  hostedDomain: '',
+  forceCodeForRefreshToken: true,
+});
+
 const SignIn = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
     const loadCredentials = async () => {
@@ -66,7 +83,7 @@ const SignIn = ({navigation}) => {
       await AsyncStorage.setItem('userEmail', email);
       await AsyncStorage.setItem('userPassword', password);
 
-      // 👇 Fetch profile from Firestore
+      // Fetch profile from Firestore
       const docRef = doc(db, 'profile', user.uid);
       const docSnap = await getDoc(docRef);
 
@@ -113,25 +130,92 @@ const SignIn = ({navigation}) => {
     }
   };
 
-  //  const handleGoogleLogin = async () => {
-  //     if (signingIn) return; // prevent double tap
-  //     setSigningIn(true);
+  const handleGoogleLogin = async () => {
+    if (signingIn) return;
+    setSigningIn(true);
 
-  //     try {
-  //       const result = await signInWithGoogle();
-  //       console.log('✅ User signed in with Google:', result.user);
-  //       navigation.replace("Main");
+    try {
+      // Check if your device supports Google Play
+      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+      
+      // Get the user's ID token
+      const {idToken} = await GoogleSignin.signIn();
 
-  //     } catch (error) {
-  //       if (error.message?.includes("Sign-in in progress")) {
-  //         console.log("⏳ Google sign-in already in progress...");
-  //       } else {
-  //         console.log('❌ Error:', error);
-  //       }
-  //     } finally {
-  //       setSigningIn(false);
-  //     }
-  //   };
+      // Create a Google credential with the token
+      const googleCredential = GoogleAuthProvider.credential(idToken);
+
+      // Sign-in the user with the credential
+      const userCredential = await signInWithCredential(auth, googleCredential);
+      const user = userCredential.user;
+
+      // Check if user profile exists in Firestore
+      const docRef = doc(db, 'profile', user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        // Create user profile in Firestore if it doesn't exist
+        await setDoc(docRef, {
+          fullname: user.displayName || '',
+          email: user.email || '',
+          createdAt: new Date(),
+          provider: 'google',
+        });
+      }
+
+      // Save user data to AsyncStorage
+      await AsyncStorage.setItem(
+        'UserData',
+        JSON.stringify({
+          fullname: user.displayName || '',
+          email: user.email || '',
+        }),
+      );
+
+      // Save credentials
+      await AsyncStorage.setItem('userEmail', user.email || '');
+      await AsyncStorage.setItem('userPassword', ''); // No password for Google login
+
+      Toast.show({
+        type: 'success',
+        text1: 'Login Successful',
+        text2: `Welcome ${user.displayName || 'User'}!`,
+        position: 'bottom',
+        visibilityTime: 2000,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'green'}},
+      });
+
+      navigation.replace('Main');
+    } catch (error) {
+      console.log('Google Sign-In Error:', error);
+      
+      let errorMessage = 'Google login failed';
+      
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        errorMessage = 'Google sign-in was cancelled';
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        errorMessage = 'Google sign-in already in progress';
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        errorMessage = 'Google Play Services not available';
+      } else {
+        errorMessage = error.message || 'Google login failed';
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: 'Google Login Failed',
+        text2: errorMessage,
+        position: 'bottom',
+        visibilityTime: 2500,
+        text1Style: {color: 'white'},
+        text2Style: {color: 'white'},
+        props: {style: {backgroundColor: 'red'}},
+      });
+    } finally {
+      setSigningIn(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -235,21 +319,29 @@ const SignIn = ({navigation}) => {
                 <View style={{flex: 1, height: 1, backgroundColor: '#ccc'}} />
               </View>
 
-              {/* Google Icon */}
+              {/* Google Sign-In Button */}
               <TouchableOpacity
+                onPress={handleGoogleLogin}
+                disabled={signingIn}
                 style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 30,
-                  justifyContent: 'center',
+                  flexDirection: 'row',
                   alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '80%',
+                  padding: 15,
+                  borderRadius: 10,
                   borderWidth: 1,
                   borderColor: '#ccc',
+                  backgroundColor: 'white',
+                  opacity: signingIn ? 0.6 : 1,
                 }}>
                 <Image
                   source={require('../../Assets/new/google.png')}
-                  style={{width: 30, height: 30, resizeMode: 'contain'}}
+                  style={{width: 24, height: 24, marginRight: 10}}
                 />
+                <Text style={{color: 'black', fontSize: 16, fontWeight: '500'}}>
+                  {signingIn ? 'Signing In...' : 'Continue with Google'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
